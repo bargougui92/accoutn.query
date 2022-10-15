@@ -1,0 +1,28 @@
+server:
+  port: 5001
+
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update # this means hibernate will compare the entities with the DB and update the DB. expl: it will generate bankAccount Table at first execution
+  dataSource:
+    url: jdbc:mysql://localhost:3306/bankAccount?createDatabaseIfNoExist=true #while hibernate generates the tables this script generates the Database if it doesn't exist
+    username: root
+    password: 123456
+  kafka:
+    listener:
+      ack-mode: MANUAL_IMMEDIATE #we want to manually commit the offset on the topic as soon as we consume a message from kafka
+      consumer:
+        bootstrap-servers: localhost:9092
+        group-id: bankaccConsumer      #two listeners in the same group ID will split the message consumption between them while two with different group ID the will consume the whole message each of them
+        auto-offset-reset: earlist #this means start from consumption from the beginning
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+        properties:
+          spring:
+            json:
+              trusted:
+                packages: '*' #we trust all packages to be deserialized
+
